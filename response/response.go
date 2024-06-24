@@ -12,3 +12,19 @@ func WriteJSON(writer http.ResponseWriter, data any, code int) {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func WritePlainText(writer http.ResponseWriter, data string, code int) {
+	writer.WriteHeader(code)
+	writer.Header().Set("Content-Type", "plain/text")
+	writer.Write([]byte(data))
+
+}
+
+func WriteOK(writer http.ResponseWriter) {
+	writer.WriteHeader(200)
+	writer.Write([]byte("OK"))
+}
+
+func WriteServerError(writer http.ResponseWriter) {
+	http.Error(writer, "Server error", http.StatusInternalServerError)
+}
