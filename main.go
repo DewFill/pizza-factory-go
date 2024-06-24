@@ -29,17 +29,24 @@ func main() {
 	}
 	defer db.Close()
 
+	// Create context and queries
+	ctx := context.Background()
 	queries := sqlc.New(db)
 
+	// Set up router
 	router := http.NewServeMux()
 
-	router.Handle("GET /orders/{order_id}", handlers.HandleGetOrder(ctx, queries))
-
-	router.Handle("POST /orders", handlers.HandleCreateOrder(ctx, db, queries))
-
-	router.Handle("POST /orders/{order_id}/items", handlers.HandleAddItemsToOrder(ctx, db, queries))
-
+	// Register handlers
+	router.Handle("GET /orders/{order_id}", handlers.HandlerGetOrder(ctx, queries))
+	router.Handle("POST /orders", handlers.HandlerCreateOrder(ctx, db, queries))
+	router.Handle("POST /orders/{order_id}/items", handlers.HandlerAddItemsToOrder(ctx, db, queries))
 	router.Handle("POST /orders/{order_id}/done", middleware.AuthHeaderRequired(handlers.HandlerMakeOrderDone(ctx, db, queries)))
+	router.Handle("GET /orders", middleware.AuthHeaderRequired(handlers.HandlerListOrders(ctx, queries)))
+
+	// Start the server
+	startServer(router)
+}
+
 // setupDatabase initializes the database connection using environment variables
 func setupDatabase() (*sql.DB, error) {
 	dsn := fmt.Sprintf(
@@ -56,21 +63,23 @@ func setupDatabase() (*sql.DB, error) {
 		return nil, err
 	}
 
-	router.Handle("GET /orders", middleware.AuthHeaderRequired(handlers.HandlerListOrders(ctx, db, queries)))
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
 	return db, nil
 }
+
+// startServer starts the HTTP server with logging and address from environment variables
+func startServer(router *http.ServeMux) {
 	server := http.Server{
-		Addr:    os.Getenv("APP_HOSTNAME") + ":" + os.Getenv("APP_PORT"),
+		Addr:    fmt.Sprintf("%s:%s", os.Getenv("APP_HOSTNAME"), os.Getenv("APP_PORT")),
 		Handler: middleware.Logging(router),
 	}
 
-	log.Println("Listening on " + "http://" + os.Getenv("APP_HOSTNAME") + ":" + os.Getenv("APP_PORT"))
-	err = server.ListenAndServe()
-	if err != nil {
-		log.Fatalf(err.Error())
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("Server failed: %v", err)
 	}
+
+	log.Printf("Listening on http://%s:%s", os.Getenv("APP_HOSTNAME"), os.Getenv("APP_PORT"))
 }
