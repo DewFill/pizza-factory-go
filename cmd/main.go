@@ -31,9 +31,9 @@ func main() {
 	router := http.NewServeMux()
 
 	// Register handlers
-	router.Handle("GET /orders/{order_id}", handlers.HandlerGetOrder(ctx, queries))
 	router.Handle("POST /orders", handlers.HandlerCreateOrder(ctx, db, queries))
 	router.Handle("POST /orders/{order_id}/items", handlers.HandlerAddItemsToOrder(ctx, db, queries))
+	router.Handle("GET /orders/{order_id}", handlers.HandlerGetOrder(ctx, queries))
 	router.Handle("POST /orders/{order_id}/done", middleware.AuthHeaderRequired(handlers.HandlerMakeOrderDone(ctx, db, queries)))
 	router.Handle("GET /orders", middleware.AuthHeaderRequired(handlers.HandlerListOrders(ctx, queries)))
 
