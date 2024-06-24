@@ -60,7 +60,7 @@ func HandlerCreateOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queries) 
 			return
 		}
 
-		response.WriteJSON(writer, order, 200)
+		response.WriteJSON(writer, order, http.StatusCreated)
 	})
 }
 
@@ -138,7 +138,7 @@ func HandlerAddItemsToOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queri
 			} else if errors.As(err, &custom_errors.ErrOrderAlreadyDone) {
 				response.WritePlainText(writer, err.Error(), http.StatusConflict)
 			} else {
-				response.WritePlainText(writer, err.Error(), http.StatusInternalServerError)
+				response.WriteServerError(writer)
 			}
 			return
 		}
@@ -246,7 +246,7 @@ func HandlerListOrders(ctx context.Context, queries *sqlc.Queries) http.Handler 
 				return
 			}
 
-			response.WriteJSON(writer, orders, 200)
+			response.WriteJSON(writer, orders, http.StatusOK)
 			return
 		} else if doneQuery == "1" {
 			// list all done orders
@@ -256,7 +256,7 @@ func HandlerListOrders(ctx context.Context, queries *sqlc.Queries) http.Handler 
 				return
 			}
 
-			response.WriteJSON(writer, orders, 200)
+			response.WriteJSON(writer, orders, http.StatusOK)
 			return
 		} else if doneQuery == "0" {
 			// list all not done orders
@@ -266,10 +266,10 @@ func HandlerListOrders(ctx context.Context, queries *sqlc.Queries) http.Handler 
 				return
 			}
 
-			response.WriteJSON(writer, orders, 200)
+			response.WriteJSON(writer, orders, http.StatusOK)
 			return
 		}
 
-		response.WritePlainText(writer, "done query has an invalid value", 400)
+		response.WritePlainText(writer, "'done' query is an invalid value", http.StatusBadRequest)
 	})
 }
