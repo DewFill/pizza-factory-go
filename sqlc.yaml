@@ -1,0 +1,11 @@
+version: "2"
+sql:
+    - engine: "postgresql"
+      queries: "query.sql"
+      schema: "docker/postgres/docker-entrypoint-initdb.d/schema.sql"
+      gen:
+          go:
+              package: "sqlc"
+              out: "sqlc"
+              emit_json_tags: true
+              emit_empty_slices: true
