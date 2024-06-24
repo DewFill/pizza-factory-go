@@ -1,4 +1,5 @@
-@order_id = 9d706425664e7da
+@order_id = 9e43cc3fce43f68
+@auth_key= qwerty123
 
 ### create new order with items
 POST localhost:8080/orders
@@ -31,19 +32,19 @@ GET localhost:8080/orders/{{order_id}}
 
 ### set order as done
 POST localhost:8080/orders/{{order_id}}/done
-X-Auth-Key: qwerty123
+X-Auth-Key: {{auth_key}}
 
 
 ### get all orders
 GET localhost:8080/orders
-X-Auth-Key: qwerty123
+X-Auth-Key: {{auth_key}}
 
 
 ### get all not done orders
 GET localhost:8080/orders?done=0
-X-Auth-Key: qwerty123
+X-Auth-Key: {{auth_key}}
 
 
 ### get all done orders
 GET localhost:8080/orders?done=1
-X-Auth-Key: qwerty123
+X-Auth-Key: {{auth_key}}
