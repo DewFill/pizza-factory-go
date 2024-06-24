@@ -2,6 +2,11 @@
 
 This API provides endpoints for managing pizza orders, including creating orders, adding items to orders, marking orders as done, and listing orders. Authentication is required for certain operations.
 
+API tests can be found in file [test-requests.http](test-requests.http)
+
+Database schema can be found in file [docker/postgres/docker-entrypoint-initdb.d/schema.sql](docker/postgres/docker-entrypoint-initdb.d/schema.sql)
+
+App queries can be found in file [query.sql](query.sql)
 ## Start
 ```shell
 make up
@@ -151,5 +156,3 @@ URL queries:
 ```
 * 400 Bad Request: `done` query is an invalid value.
 * 401 Unauthorized: Auth key is not provided or does not match.
-
-
