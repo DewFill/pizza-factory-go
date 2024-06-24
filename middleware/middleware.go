@@ -58,6 +58,7 @@ func AuthHeaderRequired(next http.Handler) http.Handler {
 
 		hashedPassword := os.Getenv("APP_AUTH_HEADER_BCRYPT")
 
+		//hashed password is used because of possible timing attack (https://en.wikipedia.org/wiki/Timing_attack)
 		if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(authHeader)); err != nil {
 			w.WriteHeader(401)
 			io.WriteString(w, "Unauthorized")
