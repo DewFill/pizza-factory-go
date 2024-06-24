@@ -1,3 +1,5 @@
+@order_id = 9d706425664e7da
+
 ### create new order with items
 POST localhost:8080/orders
 Content-Type: application/json
@@ -10,8 +12,9 @@ Content-Type: application/json
   ]
 }
 
+
 ### add items to an existing order
-POST localhost:8080/orders/55ff9e90c4443d8/items
+POST localhost:8080/orders/{{order_id}}/items
 Content-Type: application/json
 
 
@@ -23,11 +26,11 @@ Content-Type: application/json
 
 
 ### get order info
-GET localhost:8080/orders/55ff9e90c4443d8
+GET localhost:8080/orders/{{order_id}}
 
 
 ### set order as done
-POST localhost:8080/orders/55ff9e90c4443d8/done
+POST localhost:8080/orders/{{order_id}}/done
 X-Auth-Key: qwerty123
 
 
