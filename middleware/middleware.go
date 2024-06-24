@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"golang.org/x/crypto/bcrypt"
-	"io"
 	"log"
 	"net/http"
 	"os"
+	"pizza-factory-go/response"
 	"time"
 )
 
@@ -52,7 +52,7 @@ func AuthHeaderRequired(next http.Handler) http.Handler {
 		// Перебор всех заголовков
 		authHeader := r.Header.Get("X-Auth-Key")
 		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			response.WritePlainText(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -60,8 +60,8 @@ func AuthHeaderRequired(next http.Handler) http.Handler {
 
 		//hashed password is used because of possible timing attack (https://en.wikipedia.org/wiki/Timing_attack)
 		if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(authHeader)); err != nil {
-			w.WriteHeader(401)
-			io.WriteString(w, "Unauthorized")
+			response.WritePlainText(w, "Unauthorized", http.StatusUnauthorized)
+			return
 		}
 
 		next.ServeHTTP(w, r)
