@@ -1,0 +1,46 @@
+### create new order with items
+POST localhost:8080/orders
+Content-Type: application/json
+
+{
+  "item_ids": [
+    1,
+    1,
+    2
+  ]
+}
+
+### add items to an existing order
+POST localhost:8080/orders/55ff9e90c4443d8/items
+Content-Type: application/json
+
+
+[
+  1,
+  1,
+  2
+]
+
+
+### get order info
+GET localhost:8080/orders/55ff9e90c4443d8
+
+
+### set order as done
+POST localhost:8080/orders/55ff9e90c4443d8/done
+X-Auth-Key: qwerty123
+
+
+### get all orders
+GET localhost:8080/orders
+X-Auth-Key: qwerty123
+
+
+### get all not done orders
+GET localhost:8080/orders?done=0
+X-Auth-Key: qwerty123
+
+
+### get all done orders
+GET localhost:8080/orders?done=1
+X-Auth-Key: qwerty123
