@@ -29,7 +29,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// Create context and queries
+	// Create context and slqc queries
 	ctx := context.Background()
 	queries := sqlc.New(db)
 

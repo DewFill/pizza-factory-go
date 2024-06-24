@@ -39,7 +39,7 @@ func HandlerCreateOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queries) 
 
 		var data RequestData
 
-		// Чтение и декодирование JSON из тела запроса
+		// decoding and reading JSON from the request body
 		decoder := json.NewDecoder(request.Body)
 		decoder.DisallowUnknownFields()
 		err := decoder.Decode(&data)
@@ -48,7 +48,7 @@ func HandlerCreateOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queries) 
 			return
 		}
 
-		// create order
+		// creating new order
 		order, err := createOrder(ctx, db, queries, data.ItemIds, false)
 		if err != nil {
 			if errors.As(err, &custom_errors.ErrIdDoesNotExist) {
@@ -84,6 +84,7 @@ func createOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queries, itemIds
 
 	var pqErr *pq.Error
 	var sliceItemIds []int32
+	// iterating over item ids and creating new items
 	for _, id := range itemIds {
 		var itemId int32
 		itemId, err = qtx.CreateOrderItems(ctx, sqlc.CreateOrderItemsParams{OrderID: order.ID, ItemID: id})
@@ -129,7 +130,7 @@ func HandlerAddItemsToOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queri
 			return
 		}
 
-		// Добавляем Items в Order
+		// adding items to the order
 		err = addItemsToOrder(ctx, db, queries, orderId, itemIds)
 		if err != nil {
 			if errors.As(err, &custom_errors.ErrIdDoesNotExist) {
@@ -215,6 +216,7 @@ func HandlerMakeOrderDone(ctx context.Context, db *sql.DB, queries *sqlc.Queries
 			return
 		}
 
+		// setting order as done
 		err = qtx.SetOrderDone(ctx, orderId)
 		if err != nil {
 			response.WriteServerError(writer)
