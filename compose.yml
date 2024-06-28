@@ -13,6 +13,14 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./
+          files:
+            - ./**/*.go
+            - ./go.mod
+            - ./go.sum
 
 
   database:
