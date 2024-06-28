@@ -1,0 +1,5 @@
+test-requests.http
+sqlc.yaml
+README.md
+query.sql
+.gitignore
