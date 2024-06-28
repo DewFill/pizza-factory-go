@@ -6,4 +6,4 @@ clear:
 	docker compose down -v --remove-orphans
 	docker compose rm -vsf
 watch:
-	docker compose watch
+	docker compose watch --quiet
