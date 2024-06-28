@@ -8,27 +8,30 @@ import (
 	"log"
 	"net/http"
 	"pizza-factory-go/custom_errors"
+	"pizza-factory-go/dto"
 	"pizza-factory-go/response"
-	"pizza-factory-go/service"
+	"pizza-factory-go/storage"
 )
 
 // HandlerGetOrder handles the GET request to retrieve an order by its ID
-func HandlerGetOrder(ctx context.Context, orderService *service.OrderService) http.Handler {
+func HandlerGetOrder(ctx context.Context, storageOrder storage.OrderStorage) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		orderId := request.PathValue("order_id")
-		order, err := orderService.GetOrder(ctx, orderId)
+		order, err := storageOrder.GetOrderWithItemIds(ctx, orderId)
 
 		if err != nil {
 			response.WritePlainText(writer, "order not found", http.StatusNotFound)
 			return
 		}
 
+		log.Println("Returning order", order)
+
 		response.WriteJSON(writer, order, http.StatusOK)
 	})
 }
 
 // HandlerCreateOrder handles the POST request to create a new order
-func HandlerCreateOrder(ctx context.Context, orderService *service.OrderService) http.Handler {
+func HandlerCreateOrder(ctx context.Context, orderStorage storage.OrderStorage) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		type RequestData struct {
 			ItemIds []int32 `json:"items"`
@@ -46,7 +49,7 @@ func HandlerCreateOrder(ctx context.Context, orderService *service.OrderService)
 		}
 
 		// creating new order
-		order, err := orderService.CreateOrder(ctx, data.ItemIds, false)
+		order, err := orderStorage.CreateOrder(ctx, data.ItemIds, false)
 		if err != nil {
 			if errors.As(err, &custom_errors.ErrIdDoesNotExist) {
 				response.WritePlainText(writer, err.Error(), http.StatusNotFound)
@@ -62,7 +65,7 @@ func HandlerCreateOrder(ctx context.Context, orderService *service.OrderService)
 }
 
 // HandlerAddItemsToOrder handles the POST request to add items to an existing order
-func HandlerAddItemsToOrder(ctx context.Context, orderService *service.OrderService) http.Handler {
+func HandlerAddItemsToOrder(ctx context.Context, orderStorage storage.OrderStorage) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		// Читаем тело запроса
 		orderId := request.PathValue("order_id")
@@ -85,7 +88,7 @@ func HandlerAddItemsToOrder(ctx context.Context, orderService *service.OrderServ
 		}
 
 		// adding items to the order
-		err = orderService.AddItemsToOrder(ctx, orderId, itemIds)
+		err = orderStorage.AddItemsToOrder(ctx, orderId, itemIds)
 		if err != nil {
 			if errors.As(err, &custom_errors.ErrIdDoesNotExist) {
 				response.WritePlainText(writer, err.Error(), http.StatusNotFound)
@@ -102,10 +105,10 @@ func HandlerAddItemsToOrder(ctx context.Context, orderService *service.OrderServ
 }
 
 // HandlerMakeOrderDone handles the POST request to mark an order as done
-func HandlerMakeOrderDone(ctx context.Context, orderService *service.OrderService) http.Handler {
+func HandlerMakeOrderDone(ctx context.Context, orderStorage storage.OrderStorage) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		orderId := request.PathValue("order_id")
-		err := orderService.MakeOrderDone(ctx, orderId)
+		err := orderStorage.MakeOrderDone(ctx, orderId)
 		if err != nil {
 			if errors.As(err, &custom_errors.ErrOrderAlreadyDone) {
 				response.WritePlainText(writer, err.Error(), http.StatusConflict)
@@ -124,42 +127,32 @@ func HandlerMakeOrderDone(ctx context.Context, orderService *service.OrderServic
 }
 
 // HandlerListOrders handles the GET request to list orders
-func HandlerListOrders(ctx context.Context, orderService *service.OrderService) http.Handler {
+func HandlerListOrders(ctx context.Context, orderStorage storage.OrderStorage) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		doneQuery := request.URL.Query().Get("done")
 
+		var orders []dto.Order
+		var err error
 		// list all orders without filter
 		if doneQuery == "" {
-			orders, err := orderService.ListOrders(ctx)
-			if err != nil {
-				response.WriteServerError(writer)
-				return
-			}
-
-			response.WriteJSON(writer, orders, http.StatusOK)
-			return
+			orders, err = orderStorage.ListOrders(ctx)
 		} else if doneQuery == "1" {
 			// list all done orders
-			orders, err := orderService.ListOrdersByDone(ctx, true)
-			if err != nil {
-				response.WriteServerError(writer)
-				return
-			}
-
-			response.WriteJSON(writer, orders, http.StatusOK)
-			return
+			orders, err = orderStorage.ListOrdersByDone(ctx, true)
 		} else if doneQuery == "0" {
 			// list all not done orders
-			orders, err := orderService.ListOrdersByDone(ctx, false)
-			if err != nil {
-				response.WriteServerError(writer)
-				return
-			}
-
-			response.WriteJSON(writer, orders, http.StatusOK)
+			orders, err = orderStorage.ListOrdersByDone(ctx, false)
+		} else {
+			response.WritePlainText(writer, "The 'done' query has an invalid value.", http.StatusBadRequest)
 			return
 		}
 
-		response.WritePlainText(writer, "The 'done' query has an invalid value.", http.StatusBadRequest)
+		if err != nil {
+			response.WriteServerError(writer)
+			return
+		}
+
+		response.WriteJSON(writer, orders, http.StatusOK)
+		return
 	})
 }

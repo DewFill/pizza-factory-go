@@ -11,7 +11,7 @@ import (
 	"os"
 	"pizza-factory-go/handlers"
 	"pizza-factory-go/middleware"
-	"pizza-factory-go/service"
+	"pizza-factory-go/postgres"
 	"pizza-factory-go/sqlc"
 )
 
@@ -28,18 +28,18 @@ func main() {
 	ctx := context.Background()
 	queries := sqlc.New(db)
 
-	// Create the order service
-	orderService := service.NewOrderService(db, queries)
+	// Create the postgres order storage
+	orderStorage := postgres.NewOrderStorage(db, queries)
 
 	// Set up router
 	router := http.NewServeMux()
 
 	// Register handlers
-	router.Handle("POST /orders", handlers.HandlerCreateOrder(ctx, orderService))
-	router.Handle("POST /orders/{order_id}/items", handlers.HandlerAddItemsToOrder(ctx, orderService))
-	router.Handle("GET /orders/{order_id}", handlers.HandlerGetOrder(ctx, orderService))
-	router.Handle("POST /orders/{order_id}/done", middleware.AuthHeaderRequired(handlers.HandlerMakeOrderDone(ctx, orderService)))
-	router.Handle("GET /orders", middleware.AuthHeaderRequired(handlers.HandlerListOrders(ctx, orderService)))
+	router.Handle("POST /orders", handlers.HandlerCreateOrder(ctx, orderStorage))
+	router.Handle("POST /orders/{order_id}/items", handlers.HandlerAddItemsToOrder(ctx, orderStorage))
+	router.Handle("GET /orders/{order_id}", handlers.HandlerGetOrder(ctx, orderStorage))
+	router.Handle("POST /orders/{order_id}/done", middleware.AuthHeaderRequired(handlers.HandlerMakeOrderDone(ctx, orderStorage)))
+	router.Handle("GET /orders", middleware.AuthHeaderRequired(handlers.HandlerListOrders(ctx, orderStorage)))
 
 	// Start the server
 	startServer(router)
