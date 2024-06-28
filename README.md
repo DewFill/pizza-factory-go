@@ -38,7 +38,7 @@ Create a new order.
 
 ```json
 {
-  "item_ids": [
+  "items": [
     1,
     1,
     2
@@ -104,6 +104,17 @@ Retrieve details of a specific order by its ID.
 #### Response:
 
 * `200 OK`: Returns the order details.
+```json
+{
+  "order_id": "b7977e06244fc29",
+  "items": [
+    1,
+    2,
+    3
+  ],
+  "done": false
+}
+```
 * `404 Not Found`: If the order with the specified ID does not exist.
 
 
