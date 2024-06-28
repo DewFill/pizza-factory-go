@@ -34,7 +34,7 @@ func HandlerGetOrder(ctx context.Context, queries *sqlc.Queries) http.Handler {
 func HandlerCreateOrder(ctx context.Context, db *sql.DB, queries *sqlc.Queries) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		type RequestData struct {
-			ItemIds []int32 `json:"item_ids"`
+			ItemIds []int32 `json:"items"`
 		}
 
 		var data RequestData
