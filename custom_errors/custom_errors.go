@@ -21,7 +21,7 @@ type OrderAlreadyDone struct {
 }
 
 func (e *OrderAlreadyDone) Error() string {
-	return fmt.Sprintf("order %s does not exist", e.Id)
+	return fmt.Sprintf("order %s is already done", e.Id)
 }
 
 var ErrOrderAlreadyDone *OrderAlreadyDone
